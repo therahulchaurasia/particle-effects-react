@@ -12,6 +12,10 @@ type LikeButtonProps = {
   starCount?: number
   /** degrees the particle field rotates during the burst */
   spinAngle?: number
+  /** glyph to render as each burst particle instead of the default dot */
+  particleSymbol?: string
+  /** glyph to render as each falling star instead of the default dot */
+  starSymbol?: string
   label?: string
 }
 
@@ -22,6 +26,8 @@ function LikeButton({
   particleCount,
   starCount,
   spinAngle = 60,
+  particleSymbol,
+  starSymbol,
   label = 'Like this post',
 }: LikeButtonProps) {
   const { buttonRef, stars, falling, launched, bursting, particles } =
@@ -45,15 +51,19 @@ function LikeButton({
           {stars.map((star, i) => (
             <span
               key={i}
-              className="star"
+              className={`star${starSymbol ? ' star--symbol' : ''}`}
               style={{
                 left: star.left,
-                width: star.size,
-                height: star.size,
+                // dot uses its random px size; emoji is sized by font-size
+                ...(starSymbol
+                  ? null
+                  : { width: star.size, height: star.size }),
                 animationDuration: star.duration,
                 animationDelay: star.delay,
               }}
-            />
+            >
+              {starSymbol}
+            </span>
           ))}
         </div>
         <div className={`rig${launched ? ' launch' : ''}`}>
@@ -113,7 +123,9 @@ function LikeButton({
         {particles.map((p, i) => (
           <span
             key={i}
-            className={`particle${p.companion ? ' companion' : ''}`}
+            className={`particle${p.companion ? ' companion' : ''}${
+              particleSymbol ? ' particle--symbol' : ''
+            }`}
             style={
               {
                 '--angle': `${p.angle}deg`,
@@ -122,7 +134,9 @@ function LikeButton({
                 top: `calc(50% + ${p.y}px)`,
               } as CSSProperties
             }
-          />
+          >
+            {particleSymbol}
+          </span>
         ))}
       </div>
     </div>

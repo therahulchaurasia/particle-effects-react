@@ -1,12 +1,38 @@
 import { useState } from 'react'
 import LikeButton from './variations/LikeButton/LikeButton'
 
+type Variant = {
+  key: string
+  label: string
+  // anything LikeButton accepts beyond isLiked/handleToggle
+  props: {
+    spinAngle?: number
+    particleSymbol?: string
+    starSymbol?: string
+  }
+}
+
 const SPIN_ANGLES = [60, 120, 180, 240, 300, 360]
-// row 0 spins clockwise, row 1 the opposite way (negative degrees)
-const ROWS = [SPIN_ANGLES, SPIN_ANGLES.map((a) => -a)]
+
+// each row is a list of button variants; state mirrors this shape
+const ROWS: Variant[][] = [
+  SPIN_ANGLES.map((a) => ({
+    key: `cw-${a}`,
+    label: `${a}°`,
+    props: { spinAngle: a },
+  })),
+  SPIN_ANGLES.map((a) => ({
+    key: `ccw-${a}`,
+    label: `${-a}°`,
+    props: { spinAngle: -a },
+  })),
+  [
+    { key: 'star-burst', label: 'star burst', props: { particleSymbol: '⭐' } },
+    { key: 'star-rain', label: 'star rain', props: { starSymbol: '⭐' } },
+  ],
+]
 
 function App() {
-  // one liked-flag per button: liked[row][col]
   const [liked, setLiked] = useState<boolean[][]>(() =>
     ROWS.map((row) => row.map(() => false)),
   )
@@ -25,17 +51,19 @@ function App() {
     >
       {ROWS.map((row, ri) => (
         <div key={ri} style={{ display: 'flex', gap: '2rem' }}>
-          {row.map((angle, ci) => (
+          {row.map((variant, ci) => (
             <div
-              key={angle}
+              key={variant.key}
               style={{ display: 'grid', placeItems: 'center', gap: '0.5rem' }}
             >
               <LikeButton
                 isLiked={liked[ri][ci]}
                 handleToggle={(value) => toggle(ri, ci, value)}
-                spinAngle={angle}
+                {...variant.props}
               />
-              <span style={{ color: '#9ca3af', fontSize: 14 }}>{angle}°</span>
+              <span style={{ color: '#9ca3af', fontSize: 14 }}>
+                {variant.label}
+              </span>
             </div>
           ))}
         </div>

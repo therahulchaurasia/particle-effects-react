@@ -284,3 +284,26 @@
   width: 4px;
   height: 4px;
 }
+
+/* --- emoji glyph variants (particleSymbol / starSymbol) --- */
+/* drop the dot styling; size the glyph with font-size, recenter on its origin */
+.particle--symbol {
+  width: auto;
+  height: auto;
+  margin: -0.5em 0 0 -0.5em;
+  background: none;
+  border-radius: 0;
+  font-size: 11px;
+  line-height: 1;
+}
+.particle--symbol.companion {
+  font-size: 8px;
+}
+.star--symbol {
+  width: auto;
+  height: auto;
+  background: none;
+  border-radius: 0;
+  font-size: 10px;
+  line-height: 1;
+}
