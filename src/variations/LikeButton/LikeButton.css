@@ -1,0 +1,286 @@
+/* --- layout --- */
+.particleWrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.particleButton {
+  position: relative;
+  overflow: hidden;
+  padding: 12px;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.particleButton:hover {
+  background: hsl(0deg 0% 100% / 0.1);
+}
+/* direct svg = heart only, never the rocket */
+.particleButton:hover > svg path {
+  stroke: var(--red);
+}
+.particleButton.liked > svg path {
+  fill: var(--red);
+  stroke: var(--red);
+}
+
+.particleButton > svg {
+  position: relative;
+  display: block;
+  opacity: 1;
+  transform-box: fill-box;
+  transform-origin: center;
+  overflow: visible;
+  width: 3rem;
+  height: 3rem;
+}
+
+/* --- heart --- */
+@keyframes heartDisappear {
+  to {
+    transform: scale(0.3) translateY(100%);
+  }
+}
+@keyframes heartPop {
+  from {
+    opacity: 1;
+    transform: scale(3);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes invisible {
+  to {
+    opacity: 0;
+  }
+}
+.particleButton.liked > svg {
+  animation:
+    heartDisappear var(--shrink-duration) ease-in,
+    invisible 0ms var(--heart-hide-delay) linear forwards,
+    heartPop var(--pop-duration) var(--burst-delay)
+      linear(
+        0,
+        0.029 1.3%,
+        0.119 2.8%,
+        0.659 8.7%,
+        0.871 11.6%,
+        1.009 14.6%,
+        1.052 16.2%,
+        1.078 17.9%,
+        1.088 19.7%,
+        1.085 21.7%,
+        1.014 31.4%,
+        0.993 38%,
+        1.001 57.6%,
+        1
+      )
+      forwards;
+}
+
+/* --- rocket --- */
+/* fills the button + centers the rocket, so translateY(%) is button-relative */
+.rig {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 1;
+  transform: translateY(100%); /* rest below the button, hidden by clip */
+}
+.rocket {
+  display: block;
+  width: 2.25rem;
+  height: 2.25rem;
+  overflow: visible;
+}
+@keyframes rocketRise {
+  0% {
+    transform: translateY(100%);
+  }
+  100% {
+    transform: translateY(0); /* glide to center */
+  }
+}
+@keyframes rocketLaunch {
+  0% {
+    transform: translateY(0);
+    animation-timing-function: ease-out;
+  }
+  18% {
+    transform: translateY(10%); /* dip, then accelerate out */
+    animation-timing-function: ease-in;
+  }
+  100% {
+    transform: translateY(-140%); /* out the top */
+  }
+}
+/* rise, then launch — the launch delay is the center hold */
+.rig.launch {
+  animation:
+    rocketRise var(--rise-duration) ease-out forwards,
+    rocketLaunch var(--launch-duration) linear var(--launch-delay) forwards;
+}
+
+/* --- flames --- */
+/* two overlapping blobs at the rocket's base; their own timings read as one plume */
+.flame {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + 1.125rem); /* rocket's base */
+  width: 7px;
+  height: 9px;
+  margin-left: -3.5px;
+  margin-top: 1px;
+  background: var(--red);
+  border-radius: 50% 50% 50% 50% / 65% 65% 40% 40%;
+  transform-origin: top center;
+}
+.flame--alt {
+  margin-left: -4px;
+  margin-top: 12px; /* overlap the main flame's lower half */
+  width: 8px;
+  height: 14px;
+  border-radius: 50% 50% 50% 50% / 80% 80% 35% 35%;
+}
+/* burn only while launched */
+.rig.launch .flame {
+  animation:
+    squash 360ms ease-in-out infinite alternate,
+    morph 520ms ease-in-out infinite alternate;
+}
+.rig.launch .flame--alt {
+  animation:
+    pulse 320ms ease-in-out infinite alternate,
+    morphAlt 600ms ease-in-out infinite alternate;
+}
+@keyframes squash {
+  from {
+    transform: scaleX(0.85) scaleY(1.25) skewX(-6deg) rotate(-20deg);
+  }
+  to {
+    transform: scaleX(1.15) scaleY(0.85) skewX(6deg) rotate(20deg);
+  }
+}
+@keyframes morph {
+  from {
+    border-radius: 55% 45% 50% 50% / 70% 60% 42% 40%;
+  }
+  to {
+    border-radius: 45% 55% 50% 50% / 60% 72% 40% 44%;
+  }
+}
+@keyframes pulse {
+  from {
+    transform: translateY(4px) scaleY(0.5) skewX(-7deg);
+  }
+  to {
+    transform: translateY(-5px) scaleY(1.28) skewX(7deg);
+  }
+}
+@keyframes morphAlt {
+  from {
+    border-radius: 55% 45% 50% 50% / 85% 75% 35% 32%;
+  }
+  to {
+    border-radius: 45% 55% 50% 50% / 72% 88% 30% 38%;
+  }
+}
+
+/* --- plume --- */
+/* rides the rig, fills the button as the rocket leaves; sits behind it */
+.blob {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + 1.125rem);
+  width: 240%; /* button-relative; fills the round button */
+  margin-left: -120%; /* center */
+  margin-top: 18px; /* below the flames */
+  z-index: -1;
+  pointer-events: none;
+}
+.blob svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* --- stars --- */
+/* speed lines clipped by the button; .falling (toggled by JS) turns the rain on */
+.starfield {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+@keyframes starFall {
+  from {
+    transform: translateY(-6px);
+  }
+  to {
+    transform: translateY(84px);
+  }
+}
+.star {
+  position: absolute;
+  top: 0;
+  border-radius: 50%;
+  background: var(--red);
+  opacity: 0;
+}
+/* per-star variety set inline by JS */
+.starfield.falling .star {
+  opacity: 1;
+  animation: starFall linear infinite;
+}
+
+/* --- particles --- */
+@keyframes spin {
+  to {
+    /* set inline per button via the --spin-angle var (same pattern as
+       --angle/--distance on .particle, which resolves fine in keyframes) */
+    transform: rotate(var(--spin-angle, 60deg));
+  }
+}
+.particleField {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.particleField.bursting {
+  animation: spin var(--burst-duration) ease-out;
+}
+@keyframes disperse {
+  40% {
+    transform: translate(
+      calc(cos(var(--angle)) * var(--distance)),
+      calc(sin(var(--angle)) * var(--distance))
+    );
+  }
+  to {
+    transform: translate(
+        calc(cos(var(--angle)) * var(--distance)),
+        calc(sin(var(--angle)) * var(--distance))
+      )
+      scale(0);
+  }
+}
+.particle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: -2px 0 0 -2px;
+  width: 6px;
+  height: 6px;
+  background: var(--red);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: disperse var(--burst-duration) cubic-bezier(0, 0, 0.2, 1) forwards;
+}
+.particle.companion {
+  width: 4px;
+  height: 4px;
+}
