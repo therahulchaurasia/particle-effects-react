@@ -82,14 +82,16 @@
 }
 
 /* --- rocket --- */
-/* fills the button + centers the rocket, so translateY(%) is button-relative */
+/* fills the button + centers the rocket, so translateY(%) is button-relative.
+   rotate(--launch-angle) first tilts the local axis, so every translateY below
+   travels along that angle — rocket, flames and plume tilt together. 0 = up. */
 .rig {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
   z-index: 1;
-  transform: translateY(100%); /* rest below the button, hidden by clip */
+  transform: rotate(var(--launch-angle, 0deg)) translateY(100%);
 }
 .rocket {
   display: block;
@@ -99,23 +101,23 @@
 }
 @keyframes rocketRise {
   0% {
-    transform: translateY(100%);
+    transform: rotate(var(--launch-angle, 0deg)) translateY(100%);
   }
   100% {
-    transform: translateY(0); /* glide to center */
+    transform: rotate(var(--launch-angle, 0deg)) translateY(0); /* to center */
   }
 }
 @keyframes rocketLaunch {
   0% {
-    transform: translateY(0);
+    transform: rotate(var(--launch-angle, 0deg)) translateY(0);
     animation-timing-function: ease-out;
   }
   18% {
-    transform: translateY(10%); /* dip, then accelerate out */
+    transform: rotate(var(--launch-angle, 0deg)) translateY(10%); /* dip */
     animation-timing-function: ease-in;
   }
   100% {
-    transform: translateY(-140%); /* out the top */
+    transform: rotate(var(--launch-angle, 0deg)) translateY(-140%); /* out */
   }
 }
 /* rise, then launch — the launch delay is the center hold */
@@ -218,10 +220,10 @@
 }
 @keyframes starFall {
   from {
-    transform: translateY(-6px);
+    transform: translateY(-6px) rotate(var(--star-angle, 0deg));
   }
   to {
-    transform: translateY(84px);
+    transform: translateY(84px) rotate(var(--star-angle, 0deg));
   }
 }
 .star {
@@ -285,6 +287,98 @@
   height: 4px;
 }
 
+/* --- orbit mode --- */
+/* moons are children of a main particle, so they inherit its disperse (scale
+   to 0) and fade out with it. rotate() spins the local frame, translateX()
+   pushes each moon to --orbit-radius; --orbit-start (inline per moon) spaces
+   them around the particle. */
+@keyframes orbit {
+  from {
+    transform: rotate(var(--orbit-start, 0deg)) translateX(var(--orbit-radius));
+  }
+  to {
+    transform: rotate(calc(var(--orbit-start, 0deg) + 360deg))
+      translateX(var(--orbit-radius));
+  }
+}
+.orbiter {
+  --orbit-radius: 9px; /* moon distance from its particle; bump to spread */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  margin: -2px 0 0 -2px;
+  background: var(--red);
+  border-radius: 50%;
+  animation: orbit var(--burst-duration) linear forwards;
+}
+
+/* --- swirl mode --- */
+/* one star spirals from the rim radius to the center: rotate() turns it 1.5x
+   while translateX() shrinks the radius to 0, then it fades as it settles in. */
+@keyframes swirlIn {
+  from {
+    transform: rotate(0deg) translateX(var(--swirl-radius, 24px));
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  to {
+    transform: rotate(720deg) translateX(0) scale(0.4);
+    opacity: 0;
+  }
+}
+.particle.swirl {
+  animation-name: swirlIn;
+  animation-duration: var(--swirl-duration);
+  /* linear: steady spiral the whole way — no lazy start, no end-stop */
+  animation-timing-function: linear;
+}
+
+/* --- fireworks: flicker + fade out (no scale) --- */
+/* fireworksOut moves the particle out to its distance with NO scale; the opacity
+   track both twinkles and fades to 0 by the end, so they vanish by fading
+   rather than shrinking. --flicker-delay (inline) desyncs each particle. */
+@keyframes fireworksOut {
+  to {
+    transform: translate(
+      calc(cos(var(--angle)) * var(--distance)),
+      calc(sin(var(--angle)) * var(--distance))
+    );
+  }
+}
+@keyframes fireworksFlicker {
+  0% {
+    opacity: 1;
+  }
+  20% {
+    opacity: 0.35;
+  }
+  35% {
+    opacity: 1;
+  }
+  55% {
+    opacity: 0.4;
+  }
+  70% {
+    opacity: 0.85;
+  }
+  85% {
+    opacity: 0.2;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.particle.flicker {
+  animation:
+    fireworksOut var(--burst-duration) cubic-bezier(0, 0, 0.2, 1) forwards,
+    fireworksFlicker var(--burst-duration) linear var(--flicker-delay, 0ms)
+      forwards;
+}
+
 /* --- emoji glyph variants (particleSymbol / starSymbol) --- */
 /* drop the dot styling; size the glyph with font-size, recenter on its origin */
 .particle--symbol {
@@ -304,6 +398,6 @@
   height: auto;
   background: none;
   border-radius: 0;
-  font-size: 10px;
+  font-size: 7px;
   line-height: 1;
 }

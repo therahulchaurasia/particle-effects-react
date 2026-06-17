@@ -12,12 +12,12 @@ html {
 
 body {
   background-color: #0d0f12;
-  overflow: hidden;
+  overflow-x: hidden;
   width: 100vw;
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .visually-hidden:not(:focus):not(:active) {

@@ -1,26 +1,32 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
-  polarToCartesian,
+  buildParticles,
   random,
   range,
-  COMPANION_ANGLE,
-  COMPANION_GAP,
   CLEANUP_DURATION,
   NUM_OF_PARTICLES,
   NUM_OF_STARS,
   PARTICLE_DELAY,
-  PARTICLE_DISTANCE,
   ROCKET_END,
   ROCKET_START,
   STAR_BAND,
   STAR_START,
   STAR_STOP,
+  SWIRL_CLEANUP,
 } from './LikeButton.helpers'
 import type { Particle, Star } from './LikeButton.helpers'
 
 type SequenceOptions = {
   particleCount?: number
   starCount?: number
+  /** orbit mode: mains fly straight out, companions circle them (no field spin) */
+  orbit?: boolean
+  /** include the trailing companion dot on each particle (default true) */
+  companion?: boolean
+  /** swirl mode: a single star spirals in to the center (no ring, no spin) */
+  swirl?: boolean
+  /** fireworks: each particle gets a random distance, size and color */
+  fireworks?: boolean
 }
 
 // Owns the launch -> burst -> cleanup timeline. The component just renders
@@ -31,7 +37,14 @@ export function useLaunchSequence(
   isLiked: boolean,
   options: SequenceOptions = {},
 ) {
-  const { particleCount = NUM_OF_PARTICLES, starCount = NUM_OF_STARS } = options
+  const {
+    particleCount = NUM_OF_PARTICLES,
+    starCount = NUM_OF_STARS,
+    orbit = false,
+    companion = true,
+    swirl = false,
+    fireworks = false,
+  } = options
 
   const buttonRef = useRef<HTMLButtonElement>(null)
 
@@ -46,10 +59,10 @@ export function useLaunchSequence(
       range(starCount).map((i) => {
         const side = i % 2 ? 1 : -1
         const offset = random(STAR_BAND[0], STAR_BAND[1], true)
-        const size = random(2, 3, true)
         return {
           left: `${50 + side * offset}%`,
-          size: `${size}px`,
+          scale: random(0, 1, true),
+          angle: random(-40, 40),
           duration: `${random(0.9, 1.2, true).toFixed(2)}s`,
           delay: `-${random(0, 1.2, true).toFixed(2)}s`,
         }
@@ -65,18 +78,16 @@ export function useLaunchSequence(
     if (!btn) return
 
     const rim = btn.offsetWidth / 2 + 10
-    const built = range(particleCount).flatMap<Particle>((index) => {
-      const angle = (index / particleCount) * 360
-      const [x, y] = polarToCartesian(angle, rim)
-      const [cx, cy] = polarToCartesian(
-        angle + COMPANION_ANGLE,
-        rim + COMPANION_GAP,
-      )
-      return [
-        { angle, distance: PARTICLE_DISTANCE, x, y, companion: false },
-        { angle, distance: PARTICLE_DISTANCE, x: cx, y: cy, companion: true },
-      ]
+    const count = swirl ? 1 : particleCount
+    const built = buildParticles(count, rim, {
+      orbit,
+      companion,
+      swirl,
+      fireworks,
     })
+
+    // swirl's single star takes longer to settle than the quick burst
+    const cleanupAt = swirl ? SWIRL_CLEANUP : CLEANUP_DURATION
 
     const timers = [
       window.setTimeout(() => setFalling(true), STAR_START),
@@ -90,7 +101,7 @@ export function useLaunchSequence(
       window.setTimeout(() => {
         setBursting(false)
         setParticles([])
-      }, CLEANUP_DURATION),
+      }, cleanupAt),
     ]
 
     // clears on unlike, rapid re-toggle, and StrictMode's double-invoke
@@ -101,7 +112,7 @@ export function useLaunchSequence(
       setBursting(false)
       setParticles([])
     }
-  }, [isLiked, particleCount])
+  }, [isLiked, particleCount, orbit, companion, swirl, fireworks])
 
   return { buttonRef, stars, falling, launched, bursting, particles }
 }

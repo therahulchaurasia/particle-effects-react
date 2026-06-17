@@ -1,73 +1,105 @@
-import { useState } from 'react'
+import { useState, type CSSProperties } from 'react'
 import LikeButton from './variations/LikeButton/LikeButton'
 
-type Variant = {
+const COLUMNS = 5 // grid width; the list wraps to new rows automatically
+
+// a grid cell = one labelled button + the props that make it that variation
+type Cell = {
   key: string
   label: string
-  // anything LikeButton accepts beyond isLiked/handleToggle
   props: {
+    color?: string
     spinAngle?: number
-    particleSymbol?: string
+    launchAngle?: number
+    launchSpread?: number
+    orbit?: boolean
+    swirl?: boolean
+    fireworks?: boolean
+    particleCount?: number
     starSymbol?: string
+    particleSymbol?: string
+    companion?: boolean
   }
 }
 
-const SPIN_ANGLES = [60, 120, 180, 240, 300, 360]
-
-// each row is a list of button variants; state mirrors this shape
-const ROWS: Variant[][] = [
-  SPIN_ANGLES.map((a) => ({
-    key: `cw-${a}`,
-    label: `${a}°`,
-    props: { spinAngle: a },
-  })),
-  SPIN_ANGLES.map((a) => ({
-    key: `ccw-${a}`,
-    label: `${-a}°`,
-    props: { spinAngle: -a },
-  })),
-  [
-    { key: 'star-burst', label: 'star burst', props: { particleSymbol: '⭐' } },
-    { key: 'star-rain', label: 'star rain', props: { starSymbol: '⭐' } },
-  ],
+const VARIATIONS: Cell[] = [
+  { key: 'orbit', label: 'orbit', props: { orbit: true } },
+  { key: 'random-tilt', label: 'random tilt ±20°', props: { launchSpread: 20 } },
+  {
+    key: 'stars',
+    label: 'stars',
+    props: { starSymbol: '⭐', particleSymbol: '⭐', companion: false },
+  },
+  {
+    key: 'fireworks',
+    label: 'fireworks',
+    // green heart/rocket/flames/plume; particles keep their random colors
+    props: { fireworks: true, particleCount: 24, color: '#34d399' },
+  },
+  { key: 'spin-360', label: '360°', props: { spinAngle: 360 } },
 ]
 
-function App() {
-  const [liked, setLiked] = useState<boolean[][]>(() =>
-    ROWS.map((row) => row.map(() => false)),
-  )
+// one boxed cell: subtle separation, button up top, label spaced below
+const cell: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: '1.5rem',
+  padding: '2.25rem 1rem 1.25rem',
+  minHeight: 160,
+  border: '1px dashed rgba(255, 255, 255, 0.14)',
+  borderRadius: 10,
+}
+const cellLabel: CSSProperties = { color: '#9ca3af', fontSize: 14 }
 
-  const toggle = (row: number, col: number, value: boolean) =>
-    setLiked((prev) =>
-      prev.map((r, ri) =>
-        ri === row ? r.map((v, ci) => (ci === col ? value : v)) : r,
-      ),
-    )
+function App() {
+  const [defaultLiked, setDefaultLiked] = useState(false)
+
+  // one liked flag per variation, by index
+  const [liked, setLiked] = useState<boolean[]>(() => VARIATIONS.map(() => false))
+  const toggle = (i: number, value: boolean) =>
+    setLiked((prev) => prev.map((v, idx) => (idx === i ? value : v)))
 
   return (
     <div
       className="app"
-      style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        width: '100vw',
+        gap: '3rem',
+        padding: '6rem 2rem 3rem',
+      }}
     >
-      {ROWS.map((row, ri) => (
-        <div key={ri} style={{ display: 'flex', gap: '2rem' }}>
-          {row.map((variant, ci) => (
-            <div
-              key={variant.key}
-              style={{ display: 'grid', placeItems: 'center', gap: '0.5rem' }}
-            >
-              <LikeButton
-                isLiked={liked[ri][ci]}
-                handleToggle={(value) => toggle(ri, ci, value)}
-                {...variant.props}
-              />
-              <span style={{ color: '#9ca3af', fontSize: 14 }}>
-                {variant.label}
-              </span>
-            </div>
-          ))}
-        </div>
-      ))}
+      {/* the original, unconfigured button — standalone box on top */}
+      <div style={{ ...cell, width: 220 }}>
+        <LikeButton isLiked={defaultLiked} handleToggle={setDefaultLiked} />
+        <span style={cellLabel}>default</span>
+      </div>
+
+      {/* the variations; the grid wraps every COLUMNS cells into a new row */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: `repeat(${COLUMNS}, 1fr)`,
+          gap: '1rem',
+          width: '100%',
+          maxWidth: 1400,
+        }}
+      >
+        {VARIATIONS.map((variation, i) => (
+          <div key={variation.key} style={cell}>
+            <LikeButton
+              isLiked={liked[i]}
+              handleToggle={(value) => toggle(i, value)}
+              {...variation.props}
+            />
+            <span style={cellLabel}>{variation.label}</span>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
