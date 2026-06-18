@@ -30,6 +30,25 @@ body {
   max-width: 1100px;
 }
 
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* desktop-only hint shown next to the breakdown label on small screens */
+.desktopNote {
+  display: none;
+  color: var(--red);
+  font-size: 0.75rem;
+}
+@media (max-width: 760px) {
+  .desktopNote {
+    display: inline;
+  }
+}
+
 .sectionLabel {
   align-self: flex-start;
   color: #e5e7eb;

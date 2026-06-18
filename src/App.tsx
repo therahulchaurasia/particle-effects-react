@@ -103,9 +103,12 @@ function App() {
       </section>
 
       <section className="pageSection">
-        <h2 className="sectionLabel">
-          For those who want to see the breakdown
-        </h2>
+        <div className="sectionHead">
+          <h2 className="sectionLabel">
+            For those who want to see the breakdown
+          </h2>
+          <span className="desktopNote">Best viewed on a desktop device</span>
+        </div>
         <ScrollExplainer />
       </section>
 
