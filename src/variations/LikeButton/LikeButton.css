@@ -1,4 +1,4 @@
-/* --- layout --- */
+/* LikeButton styles + @keyframes. See CLAUDE.md. */
 .particleWrapper {
   position: relative;
   display: inline-flex;
@@ -16,7 +16,6 @@
 .particleButton:hover {
   background: hsl(0deg 0% 100% / 0.1);
 }
-/* direct svg = heart only, never the rocket */
 .particleButton:hover > svg path {
   stroke: var(--red);
 }
@@ -82,9 +81,6 @@
 }
 
 /* --- rocket --- */
-/* fills the button + centers the rocket, so translateY(%) is button-relative.
-   rotate(--launch-angle) first tilts the local axis, so every translateY below
-   travels along that angle — rocket, flames and plume tilt together. 0 = up. */
 .rig {
   position: absolute;
   inset: 0;
@@ -120,7 +116,6 @@
     transform: rotate(var(--launch-angle, 0deg)) translateY(-140%); /* out */
   }
 }
-/* rise, then launch — the launch delay is the center hold */
 .rig.launch {
   animation:
     rocketRise var(--rise-duration) ease-out forwards,
@@ -128,7 +123,6 @@
 }
 
 /* --- flames --- */
-/* two overlapping blobs at the rocket's base; their own timings read as one plume */
 .flame {
   position: absolute;
   left: 50%;
@@ -148,7 +142,6 @@
   height: 14px;
   border-radius: 50% 50% 50% 50% / 80% 80% 35% 35%;
 }
-/* burn only while launched */
 .rig.launch .flame {
   animation:
     squash 360ms ease-in-out infinite alternate,
@@ -193,14 +186,13 @@
 }
 
 /* --- plume --- */
-/* rides the rig, fills the button as the rocket leaves; sits behind it */
 .blob {
   position: absolute;
   left: 50%;
   top: calc(50% + 1.125rem);
-  width: 240%; /* button-relative; fills the round button */
-  margin-left: -120%; /* center */
-  margin-top: 18px; /* below the flames */
+  width: 240%;
+  margin-left: -120%;
+  margin-top: 18px;
   z-index: -1;
   pointer-events: none;
 }
@@ -211,7 +203,6 @@
 }
 
 /* --- stars --- */
-/* speed lines clipped by the button; .falling (toggled by JS) turns the rain on */
 .starfield {
   position: absolute;
   inset: 0;
@@ -233,7 +224,6 @@
   background: var(--red);
   opacity: 0;
 }
-/* per-star variety set inline by JS */
 .starfield.falling .star {
   opacity: 1;
   animation: starFall linear infinite;
@@ -242,8 +232,6 @@
 /* --- particles --- */
 @keyframes spin {
   to {
-    /* set inline per button via the --spin-angle var (same pattern as
-       --angle/--distance on .particle, which resolves fine in keyframes) */
     transform: rotate(var(--spin-angle, 60deg));
   }
 }
@@ -288,10 +276,6 @@
 }
 
 /* --- orbit mode --- */
-/* moons are children of a main particle, so they inherit its disperse (scale
-   to 0) and fade out with it. rotate() spins the local frame, translateX()
-   pushes each moon to --orbit-radius; --orbit-start (inline per moon) spaces
-   them around the particle. */
 @keyframes orbit {
   from {
     transform: rotate(var(--orbit-start, 0deg)) translateX(var(--orbit-radius));
@@ -302,7 +286,7 @@
   }
 }
 .orbiter {
-  --orbit-radius: 9px; /* moon distance from its particle; bump to spread */
+  --orbit-radius: 9px;
   position: absolute;
   top: 50%;
   left: 50%;
@@ -314,33 +298,7 @@
   animation: orbit var(--burst-duration) linear forwards;
 }
 
-/* --- swirl mode --- */
-/* one star spirals from the rim radius to the center: rotate() turns it 1.5x
-   while translateX() shrinks the radius to 0, then it fades as it settles in. */
-@keyframes swirlIn {
-  from {
-    transform: rotate(0deg) translateX(var(--swirl-radius, 24px));
-    opacity: 0;
-  }
-  12% {
-    opacity: 1;
-  }
-  to {
-    transform: rotate(720deg) translateX(0) scale(0.4);
-    opacity: 0;
-  }
-}
-.particle.swirl {
-  animation-name: swirlIn;
-  animation-duration: var(--swirl-duration);
-  /* linear: steady spiral the whole way — no lazy start, no end-stop */
-  animation-timing-function: linear;
-}
-
-/* --- fireworks: flicker + fade out (no scale) --- */
-/* fireworksOut moves the particle out to its distance with NO scale; the opacity
-   track both twinkles and fades to 0 by the end, so they vanish by fading
-   rather than shrinking. --flicker-delay (inline) desyncs each particle. */
+/* --- fireworks --- */
 @keyframes fireworksOut {
   to {
     transform: translate(
@@ -379,8 +337,7 @@
       forwards;
 }
 
-/* --- emoji glyph variants (particleSymbol / starSymbol) --- */
-/* drop the dot styling; size the glyph with font-size, recenter on its origin */
+/* --- emoji glyph variants --- */
 .particle--symbol {
   width: auto;
   height: auto;

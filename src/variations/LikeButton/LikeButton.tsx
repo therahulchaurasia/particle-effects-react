@@ -1,36 +1,24 @@
+// The configurable like button: markup + props (timeline lives in useLaunchSequence).
 import { useState, type CSSProperties } from 'react'
 import './LikeButton.css'
 import { cssVars, random } from './LikeButton.helpers'
 import { useLaunchSequence } from './useLaunchSequence'
 
-// orbit mode: starting angles for the moons circling each main particle.
-// evenly spaced (here 3 @ 120deg); change this list to add/remove moons.
 const ORBIT_COMPANIONS = [0, 120, 240]
 
 type LikeButtonProps = {
   isLiked: boolean
   handleToggle: (newValue: boolean) => void
-  /** overrides the --red theme color */
   color?: string
   particleCount?: number
   starCount?: number
-  /** degrees the particle field rotates during the burst */
   spinAngle?: number
-  /** tilt the rocket's takeoff off vertical (0 = straight up) */
   launchAngle?: number
-  /** if set, pick a fresh launch tilt in [-spread, +spread] on each click */
   launchSpread?: number
-  /** glyph to render as each burst particle instead of the default dot */
   particleSymbol?: string
-  /** glyph to render as each falling star instead of the default dot */
   starSymbol?: string
-  /** orbit burst: mains fly straight out, a companion circles each one */
   orbit?: boolean
-  /** include the trailing companion dot on each particle (default true) */
   companion?: boolean
-  /** swirl mode: a single star spirals in to the center */
-  swirl?: boolean
-  /** fireworks: each particle gets a random distance, size and color */
   fireworks?: boolean
   label?: string
 }
@@ -48,7 +36,6 @@ function LikeButton({
   starSymbol,
   orbit = false,
   companion = true,
-  swirl = false,
   fireworks = false,
   label = 'Like this post',
 }: LikeButtonProps) {
@@ -58,25 +45,19 @@ function LikeButton({
       starCount,
       orbit,
       companion,
-      swirl,
       fireworks,
     })
 
-  // orbit, swirl and fireworks drive their own paths — no whole-field rotation
-  const fieldSpin = orbit || swirl || fireworks ? 0 : spinAngle
+  const fieldSpin = orbit || fireworks ? 0 : spinAngle
 
-  // emoji particles are bigger than the dots, so the same radius reads as
-  // "too far" — pull their start + travel in
   const burstScale = particleSymbol ? 0.85 : 1
 
-  // launchSpread re-rolls the tilt on each click; otherwise the fixed angle
   const [tilt, setTilt] = useState(launchAngle)
   const handleToggleClick = () => {
     if (!isLiked && launchSpread) setTilt(random(-launchSpread, launchSpread))
     handleToggle(!isLiked)
   }
 
-  // props feed the same CSS vars the animations already read
   const style = {
     ...cssVars,
     ...(color && { '--red': color }),
@@ -100,7 +81,6 @@ function LikeButton({
               style={
                 {
                   left: star.left,
-                  // emoji: 5-7px font + a tilt; dot: a 2-3px circle
                   ...(starSymbol
                     ? {
                         fontSize: `${5 + star.scale * 2}px`,
@@ -178,16 +158,11 @@ function LikeButton({
             key={i}
             className={`particle${p.companion ? ' companion' : ''}${
               particleSymbol ? ' particle--symbol' : ''
-            }${swirl ? ' swirl' : ''}${fireworks ? ' flicker' : ''}`}
+            }${fireworks ? ' flicker' : ''}`}
             style={
               {
                 '--angle': `${p.angle}deg`,
                 '--distance': `${p.distance * burstScale}px`,
-                // swirl starts at the rim radius and spirals to center
-                ...(swirl && {
-                  '--swirl-radius': `${p.distance * burstScale}px`,
-                }),
-                // fireworks: per-particle size + color, staggered flicker
                 ...(p.size && { width: p.size, height: p.size }),
                 ...(p.color && { background: p.color }),
                 ...(fireworks && { '--flicker-delay': `-${(i * 50) % 300}ms` }),
@@ -197,7 +172,6 @@ function LikeButton({
             }
           >
             {particleSymbol}
-            {/* orbit mode: moons spaced around this particle, each circling it */}
             {orbit &&
               ORBIT_COMPANIONS.map((offset) => (
                 <span

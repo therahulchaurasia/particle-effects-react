@@ -1,0 +1,168 @@
+/* Explainer layout: tall sticky scrub track + sliding code-card panel. See CLAUDE.md. */
+.explainer {
+  position: relative;
+  width: 100%;
+  height: 420vh;
+}
+
+.explainerSticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.explainerInner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  align-items: center;
+  gap: clamp(2rem, 6vw, 6rem);
+  width: 100%;
+  max-width: 1100px;
+  padding: 2rem;
+}
+
+.explainerStageCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.explainerStage {
+  transform: scale(1.6);
+  transform-origin: center;
+}
+
+.scrubClip {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.scrubHeart {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 3rem;
+  height: 3rem;
+  margin: -1.5rem 0 0 -1.5rem;
+  display: block;
+  transform-box: fill-box;
+  transform-origin: center;
+  z-index: 2;
+}
+.scrubHeart path {
+  fill: var(--red);
+  stroke: var(--red);
+}
+
+.explainerPanel {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+}
+
+/* cards slide in/out (translateX) and collapse (max-height) — no vertical jump */
+.snippet {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transform: translateX(44px);
+  transition:
+    max-height 440ms ease,
+    opacity 280ms ease,
+    transform 440ms ease;
+}
+.snippet--after {
+  transform: translateX(44px);
+}
+.snippet--in {
+  max-height: 480px; /* cap — bump if a card clips */
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.snippetMain {
+  margin-bottom: 0.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.025);
+  padding: 0.85rem 1rem;
+}
+
+.snippetTitle {
+  display: block;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #9ca3af;
+  margin-bottom: 0.45rem;
+}
+
+.snippetDesc {
+  margin: 0;
+  color: #e5e7eb;
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.snippetCodeBox {
+  margin-top: 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 0.65rem 0.9rem;
+  transition:
+    border-color 280ms ease,
+    background 280ms ease;
+}
+
+.snippetCode {
+  margin: 0;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: #cbd5e1;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* the firing animation's code block lights up */
+.snippetCodeBox--active {
+  border-color: var(--red);
+  background: color-mix(in srgb, var(--red) 14%, transparent);
+}
+
+/* static mode (reduced motion / mobile): plain scrollable list, no pin/scrub */
+.explainer--static {
+  height: auto;
+}
+.explainer--static .explainerSticky {
+  position: static;
+  height: auto;
+  overflow: visible;
+  padding: 4rem 0;
+}
+.explainer--static .snippet {
+  max-height: none;
+  opacity: 1;
+  overflow: visible;
+  transform: none;
+  margin-bottom: 0.7rem;
+}
+
+@media (max-width: 760px) {
+  .explainerInner {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  .explainerStage {
+    transform: scale(1.3);
+  }
+}

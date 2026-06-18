@@ -1,7 +1,7 @@
+/* Global reset, theme tokens, page-section + variations-grid styles. See CLAUDE.md. */
 html {
   --red: #f91780;
   --particle-curve: cubic-bezier(0.2, 0.56, 0, 1);
-  /* timeline tokens injected from JS */
 }
 
 * {
@@ -18,6 +18,71 @@ body {
   display: flex;
   justify-content: center;
   align-items: flex-start;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    sans-serif;
+}
+
+.pageSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+  max-width: 1100px;
+}
+
+.sectionLabel {
+  align-self: flex-start;
+  color: #e5e7eb;
+  font-size: clamp(1rem, 2.4vw, 1.125rem);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.sectionLabel::after {
+  content: '';
+  display: block;
+  width: 2.5rem;
+  height: 2px;
+  margin-top: 0.45rem;
+  background: var(--red);
+  border-radius: 1px;
+}
+
+.sectionBody {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4rem 1rem 4.5rem;
+}
+
+.variationsGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1rem;
+}
+@media (max-width: 860px) {
+  .variationsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 560px) {
+  .variationsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.pageFooter {
+  margin-top: 2rem;
+  color: #9ca3af;
+  font-size: 0.85rem;
+  text-align: center;
+}
+.footerLink {
+  color: var(--red);
+  text-decoration: none;
+  font-weight: 500;
+}
+.footerLink:hover {
+  text-decoration: underline;
 }
 
 .visually-hidden:not(:focus):not(:active) {
