@@ -120,7 +120,7 @@ function App() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          @rahul_twtss
+          Rahul
         </a>
       </footer>
     </div>
